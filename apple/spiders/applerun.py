@@ -1,5 +1,7 @@
 # Ayse GUNDUZ
 #  scrapy genspider applerun https://www.apple.com/tr/shop/buy-mac/macbook-pro
+import json
+
 import scrapy
 from apple.items import AppleItem
 
@@ -14,10 +16,14 @@ class ApplerunSpider(scrapy.Spider):
 
     def parse(self, response):
         items = AppleItem()
-        # product name iconic+text olarak verilmiş
-        items['product_name'] = response.css('.rc-productbundle-title::text').extract()
-        items['product_color'] = response.css('.rc-productbundle-activecolorlabel::text').extract()
+        json_data = json.loads(response.xpath('//script[@type="application/json"]/text()').extract_first())
+        # items['shot'] = json_data['data']
+        items['product_name'] = [data['name'] for data in json_data['data']['products']]
+        items['product_category'] = [data['category'] for data in json_data['data']['products']]
+        items['sku'] = response.xpath(
+            '//input[contains(@class,"colornav-value rc-dimension-colornav-input")]/@value').extract()
         items['product_price'] = response.css('.rc-prices-fullprice').css('::text').extract()
-        items['product_imagelink'] = response.css('.rc-productbundle , img.rc-productbundle-image').css('::attr(src)').extract()
-        # iki renk için iki defa gösteriyor sonucu
+        json_img = response.xpath('//script[contains(@type,"application/ld+json")]/text()').getall()
+        items['product_imagelink'] = [json.loads(json_img).get('image') for json_img in json_img]
+
         yield items

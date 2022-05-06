@@ -9,6 +9,8 @@ import scrapy
 class AppleItem(scrapy.Item):
     # define the fields for your item here like:
     product_name = scrapy.Field()
-    product_color = scrapy.Field()
+    sku = scrapy.Field()
     product_price = scrapy.Field()
+    product_category = scrapy.Field()
     product_imagelink = scrapy.Field()
+    #shot = scrapy.Field()
